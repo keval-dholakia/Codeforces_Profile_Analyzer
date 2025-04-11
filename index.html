@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CF Analytics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+</head>
+
+<body>
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="themeToggle">
+            <input type="checkbox" id="themeToggle" />
+            <div class="slider">
+                <i class="ri-sun-line sun"></i>
+                <i class="ri-moon-line moon"></i>
+            </div>
+        </label>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="ri-code-box-line"></i>
+                <h1>Codeforces Profile Analyzer</h1>
+            </div>
+        </header>
+
+        <section class="search-section">
+            <div class="search-container">
+                <div class="input-wrapper">
+                    <i class="ri-user-search-line"></i>
+                    <input type="text" id="cfHandle" placeholder="Enter Codeforces Handle" value="_val_">
+                </div>
+                <button id="analyzeBtn">
+                    <i class="ri-search-line"></i>
+                    <span>Analyze</span>
+                </button>
+            </div>
+        </section>
+
+        <div id="loading" class="hidden">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p>Analyzing profile...</p>
+            </div>
+        </div>
+
+        <div id="error" class="hidden"></div>
+
+        <main id="results" class="hidden">
+            <section class="profile-overview">
+                <div class="profile-header">
+                    <div class="profile-info">
+                        <h2><span id="resultHandle"></span></h2>
+                        <div class="rating-badge">
+                            <span id="currentRating"></span>
+                            <span id="currentRank"></span>
+                        </div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <i class="ri-trophy-line"></i>
+                            <div class="stat-content">
+                                <span class="stat-label">Max Rating</span>
+                                <div class="stat-value">
+                                    <span id="maxRating"></span>
+                                    <span id="maxRank"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <i class="ri-git-commit-line"></i>
+                            <div class="stat-content">
+                                <span class="stat-label">Contribution</span>
+                                <span id="contribution" class="stat-value"></span>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <i class="ri-calendar-check-line"></i>
+                            <div class="stat-content">
+                                <span class="stat-label">Registered</span>
+                                <span id="registered" class="stat-value"></span>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <i class="ri-file-paper-2-line"></i>
+                            <div class="stat-content">
+                                <span class="stat-label">Total Submissions</span>
+                                <span id="totalSubmissions" class="stat-value"></span>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <i class="ri-check-double-line"></i>
+                            <div class="stat-content">
+                                <span class="stat-label">Problems Solved</span>
+                                <span id="uniqueSolved" class="stat-value"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="charts-section">
+                <div class="rating-chart-container">
+                    <div class="chart-card full-width">
+                        <h3><i class="ri-line-chart-line"></i>Rating History</h3>
+                        <div class="chart-container">
+                            <canvas id="ratingChart"></canvas>
+                            <div id="contestTooltip" class="contest-tooltip hidden">
+                                <h4 class="contest-name"></h4>
+                                <div class="contest-details">
+                                    <span class="old-rating"></span>
+                                    <i class="ri-arrow-right-line"></i>
+                                    <span class="new-rating"></span>
+                                </div>
+                                <div class="contest-rank"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="swiper">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <div class="chart-card">
+                                <h3><i class="ri-pie-chart-2-line"></i>Submission Verdicts</h3>
+                                <div class="chart-container">
+                                    <canvas id="verdictChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="chart-card">
+                                <h3><i class="ri-code-line"></i>Languages Used</h3>
+                                <div class="chart-container">
+                                    <canvas id="languageChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="chart-card">
+                                <h3><i class="ri-bar-chart-grouped-line"></i>Problem Ratings</h3>
+                                <div class="chart-container">
+                                    <canvas id="difficultyChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="chart-card">
+                                <h3><i class="ri-price-tag-3-line"></i>Problem Tags</h3>
+                                <div class="chart-container">
+                                    <canvas id="tagChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="chart-card">
+                                <h3><i class="ri-calendar-line"></i>Submissions by Day</h3>
+                                <div class="chart-container">
+                                    <canvas id="dayChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="chart-card">
+                                <h3><i class="ri-time-line"></i>Submissions by Hour</h3>
+                                <div class="chart-container">
+                                    <canvas id="hourChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-pagination"></div>
+                    <div class="swiper-button-prev"></div>
+                    <div class="swiper-button-next"></div>
+                </div>
+            </section>
+
+            <section class="problems-section">
+                <div class="section-header">
+                    <h3><i class="ri-code-line"></i>Problems</h3>
+                    <div class="filters">
+                        <div class="filters-row">
+                            <div class="filter-group">
+                                <span class="filter-label">Difficulty:</span>
+                                <select id="difficultyFilter">
+                                    <option value="all">All Difficulties</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <span class="filter-label">Show Solved:</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="showSolvedToggle" checked>
+                                    <span class="slider round">
+                                        <i class="ri-eye-line show-icon"></i>
+                                        <i class="ri-eye-off-line hide-icon"></i>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="tag-selector">
+                            <div class="tag-selector-header">
+                                <span class="filter-label">Tags:</span>
+                                <button class="add-tag-btn" id="addTagBtn">
+                                    <i class="ri-add-line"></i>
+                                    Add Tag
+                                </button>
+                            </div>
+                            <div class="selected-tags" id="selectedTags">
+                                <!-- Selected tags will be added here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="problems-grid" id="problemsGrid">
+                    <!-- Problems will be populated by JavaScript -->
+                </div>
+                <div class="pagination">
+                    <button id="prevPage" class="page-btn" disabled>
+                        <i class="ri-arrow-left-s-line"></i>
+                    </button>
+                    <span id="pageInfo">Page 1 of 1</span>
+                    <button id="nextPage" class="page-btn" disabled>
+                        <i class="ri-arrow-right-s-line"></i>
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Made with <i class="ri-heart-fill"></i> for competitive programmers</p>
+        </footer>
+    </div>
+
+    <div class="tag-popup" id="tagPopup">
+        <div class="tag-popup-content">
+            <div class="tag-popup-header">
+                <h3>Select Tags</h3>
+                <div class="tag-search">
+                    <i class="ri-search-line"></i>
+                    <input type="text" id="tagSearch" placeholder="Search tags...">
+                </div>
+                <button class="close-popup" id="closeTagPopup">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+            <div class="tag-categories">
+                <div class="category" data-category="data-structures">
+                    <h4>Data Structures</h4>
+                    <div class="category-tags"></div>
+                </div>
+                <div class="category" data-category="algorithms">
+                    <h4>Algorithms</h4>
+                    <div class="category-tags"></div>
+                </div>
+                <div class="category" data-category="techniques">
+                    <h4>Techniques</h4>
+                    <div class="category-tags"></div>
+                </div>
+                <div class="category" data-category="advanced">
+                    <h4>Advanced</h4>
+                    <div class="category-tags"></div>
+                </div>
+                <div class="category" data-category="other">
+                    <h4>Other</h4>
+                    <div class="category-tags"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
